@@ -1,16 +1,23 @@
 "use client";
+
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft, ArrowRight, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [busy, setBusy] = useState(false);
   const [callbackError, setCallbackError] = useState<string | null>(null);
-  useEffect(() => { setCallbackError(new URLSearchParams(window.location.search).get("error")); }, []);
+
+  useEffect(() => {
+    setCallbackError(new URLSearchParams(window.location.search).get("error"));
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setMessage("");
     try {
@@ -21,8 +28,10 @@ export default function LoginPage() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result?.error?.message || "Could not start sign-in.");
-      setMessage("If this address can receive sign-in links, an email will arrive shortly. Use the newest link and open it in this same browser.");
+      setMessageType("success");
+      setMessage("If this address can receive sign-in links, an email will arrive shortly. Open the newest link in this same browser.");
     } catch (error) {
+      setMessageType("error");
       setMessage(error instanceof Error ? error.message : "Could not start sign-in.");
     } finally {
       setBusy(false);
@@ -30,24 +39,66 @@ export default function LoginPage() {
   }
 
   const callbackMessage = callbackError === "missing_code"
-    ? "The callback arrived without a sign-in code. Request one new link and open it in the same browser; check the terminal if this repeats."
+    ? "The sign-in link arrived without a code. Request a new link and open it in this same browser."
     : callbackError === "code_exchange_failed"
-      ? "Supabase could not exchange the sign-in code. Check the terminal and the allowed redirect URLs."
+      ? "This sign-in link could not be verified. Request a new link; links can only be used once."
       : callbackError
-        ? "Sign-in could not be completed. Request a new link and check the server terminal for a safe diagnostic."
+        ? "Sign-in could not be completed. Request a new link and try again."
         : "";
 
-  return <main style={{ maxWidth: 440, margin: "12vh auto", padding: 24, fontFamily: "system-ui,sans-serif", color: "#172033" }}>
-    <p style={{ color: "#7163d9", fontWeight: 700, letterSpacing: 2 }}>DIGITALSHIELD</p>
-    <h1>Sign in securely</h1>
-    <p style={{ color: "#657086", lineHeight: 1.7 }}>We&apos;ll email you a one-time sign-in link.</p>
-    {callbackMessage && <p role="alert" style={{ color: "#9a3412", background: "#fff7ed", padding: 12, borderRadius: 8 }}>{callbackMessage}</p>}
-    <form onSubmit={submit} style={{ display: "grid", gap: 12, marginTop: 24 }}>
-      <label htmlFor="email">Email address</label>
-      <input id="email" type="email" required maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" style={{ padding: 12, border: "1px solid #d9deea", borderRadius: 8 }} />
-      <button disabled={busy} style={{ padding: 12, background: "#7664e5", color: "white", border: 0, borderRadius: 8, fontWeight: 700, cursor: busy ? "wait" : "pointer" }}>{busy ? "Sending…" : "Email me a sign-in link"}</button>
-    </form>
-    {message && <p role="status" style={{ marginTop: 18, color: "#6256b6", lineHeight: 1.6 }}>{message}</p>}
-    <p style={{ marginTop: 22, fontSize: 13 }}><Link href="/">← Back to workspace</Link></p>
-  </main>;
+  return (
+    <main className="login-page">
+      <section className="login-card" aria-labelledby="login-title">
+        <Link href="/" className="login-brand" aria-label="DigitalShield home">
+          <span className="login-brand-mark"><ShieldCheck size={22} aria-hidden="true" /></span>
+          <span>digital<strong>shield</strong></span>
+        </Link>
+
+        <div className="login-intro">
+          <span className="login-kicker">PRIVATE BY DESIGN</span>
+          <h1 id="login-title">Your privacy, in focus.</h1>
+          <p>Sign in with a one-time email link. No password to remember, and your protected workspace stays yours.</p>
+        </div>
+
+        {callbackMessage && <div className="login-message login-message-error" role="alert">{callbackMessage}</div>}
+
+        <form className="login-form" onSubmit={submit}>
+          <label htmlFor="email">Email address</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="email"
+            required
+            maxLength={254}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+          />
+          <button className="login-submit" type="submit" disabled={busy}>
+            <Mail size={17} aria-hidden="true" />
+            <span>{busy ? "Sending secure link…" : "Email me a sign-in link"}</span>
+            {!busy && <ArrowRight size={17} aria-hidden="true" />}
+          </button>
+        </form>
+
+        {message && (
+          <div className={`login-message ${messageType === "error" ? "login-message-error" : "login-message-success"}`} role={messageType === "error" ? "alert" : "status"}>
+            {messageType === "success" && <CheckCircle2 size={17} aria-hidden="true" />}
+            <span>{message}</span>
+          </div>
+        )}
+
+        <div className="login-security-note">
+          <ShieldCheck size={16} aria-hidden="true" />
+          <span>One-time access link · Secure session cookies</span>
+        </div>
+        <Link href="/" className="login-back"><ArrowLeft size={15} aria-hidden="true" /> Back to workspace</Link>
+      </section>
+    </main>
+  );
 }

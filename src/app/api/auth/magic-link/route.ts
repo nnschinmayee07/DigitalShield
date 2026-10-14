@@ -20,22 +20,41 @@ export async function POST(request: Request) {
     // Use the SSR client so the PKCE verifier is written to an HTTP-only cookie.
     // The callback needs that verifier to exchange the email link's code for a session.
     supabase = await createSupabaseServerClient();
-  } catch {
+  } catch (error) {
+    console.error(
+      "Could not initialize Supabase for magic-link sign-in.",
+      error instanceof Error ? error.name : "unknown",
+    );
     return jsonError("Authentication is not configured.", 503);
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
   let redirectTo: string;
-  try { redirectTo = new URL("/auth/callback", appUrl).toString(); }
-  catch { return jsonError("The application URL is invalid.", 503); }
+  try {
+    const origin = new URL(appUrl);
+    if (!["http:", "https:"].includes(origin.protocol)) throw new Error("Unsupported application URL protocol.");
+    if (process.env.NODE_ENV === "production" && origin.protocol !== "https:") {
+      throw new Error("Production application URL must use HTTPS.");
+    }
+    redirectTo = new URL("/auth/callback", origin).toString();
+  } catch {
+    return jsonError("The application URL is invalid. Check NEXT_PUBLIC_APP_URL.", 503);
+  }
 
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data.email,
     options: { emailRedirectTo: redirectTo },
   });
   if (error) {
-    // Do not expose provider details or account-existence information to clients.
-    console.warn("Magic-link request failed at the Supabase provider.");
+    // Provider errors are generic to callers to avoid account enumeration.
+    console.error("Supabase could not send a magic link.", {
+      code: error.code ?? "unknown",
+      status: error.status ?? "unknown",
+    });
+    return jsonError(
+      "Sign-in email could not be sent. Check Supabase email delivery settings and try again.",
+      503,
+    );
   }
   return NextResponse.json(genericSuccess);
 }

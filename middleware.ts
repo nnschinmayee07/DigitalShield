@@ -65,6 +65,10 @@ export async function middleware(request: NextRequest) {
   if (limited) return limited;
 
   let response = NextResponse.next({ request });
+  // API handlers verify the user themselves. Avoid a second auth network call
+  // here; their SSR client can refresh and persist cookies when needed.
+  if (request.nextUrl.pathname.startsWith("/api/")) return response;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return response;

@@ -38,7 +38,17 @@ export async function POST(request: Request) {
       email: input.email,
       password: input.password,
     });
-    if (error) return jsonError("Email or password is incorrect.", 401);
+    if (error) {
+      if (error.code === "email_not_confirmed") {
+        return NextResponse.json({
+          error: {
+            code: "email_not_confirmed",
+            message: "If you recently registered, confirm your email using the message from DigitalShield, then sign in again.",
+          },
+        }, { status: 401 });
+      }
+      return jsonError("Email or password is incorrect.", 401);
+    }
     return NextResponse.json({ ok: true, authenticated: true });
   }
 

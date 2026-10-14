@@ -27,6 +27,7 @@ export default function LoginPage() {
     try {
       const response = await fetch("/api/auth/password", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: mode,
@@ -35,7 +36,11 @@ export default function LoginPage() {
         }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result?.error?.message || "Authentication could not be completed.");
+      if (!response.ok) {
+        const error = new Error(result?.error?.message || "Authentication could not be completed.") as Error & { code?: string };
+        error.code = result?.error?.code;
+        throw error;
+      }
 
       setMessageType("success");
       if (mode === "sign-in") {
@@ -54,7 +59,12 @@ export default function LoginPage() {
       setPassword("");
     } catch (error) {
       setMessageType("error");
-      setMessage(error instanceof Error ? error.message : "Authentication could not be completed.");
+      if (error instanceof Error && "code" in error && error.code === "email_not_confirmed") {
+        setMessageType("error");
+        setMessage(error.message);
+      } else {
+        setMessage(error instanceof Error ? error.message : "Authentication could not be completed.");
+      }
     } finally {
       setBusy(false);
     }

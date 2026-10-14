@@ -598,6 +598,17 @@ body {
   border-color: #f0d4c7;
 }
 
+.login-error {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8b3d2b;
+  background: #fbefea;
+  border: 1px solid #f0d4c7;
+}
+
 .login-security-note {
   display: flex;
   align-items: center;

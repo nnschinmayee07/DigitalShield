@@ -511,6 +511,10 @@ body {
   margin-top: 28px;
 }
 
+.login-form input + label {
+  margin-top: 5px;
+}
+
 .login-form label {
   color: #31514c;
   font-size: 13px;
@@ -618,6 +622,36 @@ body {
 
 .login-back:hover {
   color: #a45f3b;
+}
+
+.login-switch {
+  margin: 16px 0 0;
+  color: #607873;
+  font-size: 13px;
+  text-align: center;
+}
+
+.login-switch button,
+.login-text-button {
+  color: #147d73;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-switch button:hover,
+.login-text-button:hover {
+  color: #a45f3b;
+  text-decoration: underline;
+}
+
+.login-text-button {
+  min-height: 44px;
+  display: block;
+  margin: 3px auto 0;
+  font-size: 12px;
 }
 
 :focus-visible {

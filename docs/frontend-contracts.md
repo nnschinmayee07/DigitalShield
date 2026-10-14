@@ -1,6 +1,6 @@
 # DigitalShield frontend contracts
 
-Base URL during local development: `http://localhost:3001`. JSON requests should send `Content-Type: application/json`. Authenticated routes use the Supabase session cookie created by `/login`; call them from the same origin or configure credentials if the frontend is hosted separately. The magic-link route uses the SSR cookie adapter so the PKCE verifier survives the redirect and can be exchanged by `/auth/callback`.
+Base URL during local development: `http://localhost:3001`. JSON requests should send `Content-Type: application/json`. Authenticated routes use the Supabase session cookie created by `/login`; call them from the same origin or configure credentials if the frontend is hosted separately. Password sign-in, registration, and reset use the SSR cookie adapter; password recovery uses the `/auth/callback` route to exchange its one-time code before opening `/reset-password`.
 
 ## Shared response conventions
 
@@ -16,7 +16,7 @@ Base URL during local development: `http://localhost:3001`. JSON requests should
 |---|---|---|---|
 | GET | `/api/health` | none | `{ ok, service, version, configured, timestamp }` |
 | GET | `/api/auth/me` | session cookie | `{ authenticated: true, user: { id, email } }`; otherwise 401 |
-| POST | `/api/auth/magic-link` | `{ email }` | `{ ok: true, message }` (generic message avoids account enumeration) |
+| POST | `/api/auth/password` | `{ action: "sign-in" \| "sign-up", email, password }`; reset: `{ action: "reset-password", email }`; set new password: `{ action: "update-password", password }` | `{ ok, authenticated, confirmationRequired? }`; reset/update return a generic status message |
 | POST | `/api/auth/logout` | session cookie | `{ ok: true }` |
 | GET | `/api/dashboard` | session cookie | `{ data: { counts, recentFindings, generatedAt } }` |
 | GET/POST | `/api/identities` | POST `{ label, kind?, identifier, privateNotes? }` | `{ data: [...] }` / `{ data: identity }` |

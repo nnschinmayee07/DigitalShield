@@ -4,7 +4,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 const memoryBuckets = new Map<string, { count: number; resetAt: number }>();
-let redisLimiters: { regular: Ratelimit; magicLink: Ratelimit } | null | undefined;
+let redisLimiters: { regular: Ratelimit; passwordAuth: Ratelimit } | null | undefined;
 function getRedisLimiters() {
   if (redisLimiters !== undefined) return redisLimiters;
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -13,7 +13,7 @@ function getRedisLimiters() {
   const redis = new Redis({ url, token });
   redisLimiters = {
     regular: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true, prefix: "digitalshield:api" }),
-    magicLink: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "15 m"), analytics: true, prefix: "digitalshield:magic-link" }),
+    passwordAuth: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true, prefix: "digitalshield:password-auth" }),
   };
   return redisLimiters;
 }
@@ -26,7 +26,7 @@ async function rateLimit(request: NextRequest) {
   const limiters = getRedisLimiters();
   if (limiters) {
     try {
-      const limiter = path === "/api/auth/magic-link" ? limiters.magicLink : limiters.regular;
+      const limiter = path === "/api/auth/password" ? limiters.passwordAuth : limiters.regular;
       const result = await limiter.limit(key);
       if (!result.success) {
         return NextResponse.json({ error: { message: "Too many requests. Please wait and try again." } }, {
@@ -51,8 +51,9 @@ async function rateLimit(request: NextRequest) {
 
   const now = Date.now();
   const entry = memoryBuckets.get(key);
-  const max = path === "/api/auth/magic-link" ? 5 : 60;
-  const windowMs = path === "/api/auth/magic-link" ? 15 * 60_000 : 60_000;
+  const isPasswordAuth = path === "/api/auth/password";
+  const max = isPasswordAuth ? 10 : 60;
+  const windowMs = isPasswordAuth ? 15 * 60_000 : 60_000;
   if (!entry || entry.resetAt <= now) memoryBuckets.set(key, { count: 1, resetAt: now + windowMs });
   else if (entry.count >= max) return NextResponse.json({ error: { message: "Too many requests. Please wait and try again." } }, { status: 429, headers: { "Retry-After": String(Math.ceil((entry.resetAt - now) / 1000)) } });
   else entry.count++;

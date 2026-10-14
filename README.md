@@ -41,7 +41,7 @@ Paste the result into `FIELD_ENCRYPTION_KEY`. If you already shared a key public
 
 In Supabase → SQL Editor → New query, run the migrations in order: `0001_initial_schema.sql`, `0002_removal_requests.sql`, then `0003_finding_evidence.sql`, then `0004_security_hardening.sql`. If you already applied migration 0001, run migrations 0002, 0003, and 0004 in that order. If migrations 0002 or 0003 are already applied, run only the migrations not yet applied. Each migration is intended to be applied once.
 
-Enable email OTP/magic-link sign-in in Supabase Authentication settings. Add `http://localhost:3001/auth/callback` and `http://localhost:3000/auth/callback` to allowed redirect URLs for whichever local port you use. Set `NEXT_PUBLIC_APP_URL` to that exact origin (for this project: `http://localhost:3001`). The login page now calls a server endpoint, which rate-limits sign-in requests. The callback logs only safe diagnostics and redirects with a user-facing error code if code exchange fails. Open `/login` to request a magic link. The middleware refreshes session cookies, and each protected API route independently verifies the user.
+Enable the Email provider in Supabase Authentication settings and allow email/password sign-in and registration. Add `http://localhost:3001/auth/callback` and `http://localhost:3000/auth/callback` to allowed redirect URLs for whichever local port you use. Set `NEXT_PUBLIC_APP_URL` to that exact origin (for this project: `http://localhost:3001`). The `/login` page supports email/password sign-in, registration, and password recovery. Supabase may require email confirmation for new accounts depending on the project’s Auth settings. Password recovery links return to `/auth/callback`, exchange the one-time code for a secure session, and continue to `/reset-password`. Password auth is rate-limited; the callback logs safe diagnostics and uses HTTP-only Supabase session cookies. Each protected API route independently verifies the user.
 
 ## 4. Run
 
@@ -67,7 +67,7 @@ The frontend lives in `src/app/page.tsx` with styling in `src/app/globals.css`; 
 
 Authentication checks: `GET /api/auth/me` returns the current signed-in user or `401`; `POST /api/auth/logout` ends the current session.
 
-All data routes require a valid Supabase user session except the public health check and `/api/auth/magic-link` (which is rate-limited). Requests and responses are JSON. For writes, send `Content-Type: application/json`.
+All data routes require a valid Supabase user session except the public health check and `/api/auth/password` (which is rate-limited). Requests and responses are JSON. For writes, send `Content-Type: application/json`.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -82,7 +82,7 @@ All data routes require a valid Supabase user session except the public health c
 | GET | `/api/audit-logs` | List recent audit events |
 | GET, POST | `/api/removal-requests` | Create/list authorized remediation requests |
 | PATCH | `/api/removal-requests/:id` | Update remediation request status/reference |
-| POST | `/api/auth/magic-link` | Rate-limited email sign-in link request |
+| POST | `/api/auth/password` | Rate-limited email/password sign-in, sign-up, reset request, and password update |
 | GET | `/api/auth/me` | Verify the current session |
 | POST | `/api/auth/logout` | End the current session |
 | POST | `/api/monitor` | Crawl one authorized source with `{ "sourceId": "..." }` |
@@ -108,7 +108,7 @@ This example assumes you send an authenticated session cookie (adjust port if yo
 
 ## Redis rate limiting
 
-Create an Upstash Redis database and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in `.env.local` for distributed rate limiting. API requests are limited by IP and path; magic-link requests have a stricter limit. Without these variables, a best-effort in-memory fallback is used only during local development; production requests fail closed with `503`. Never expose the Redis token in client-side variables.
+Create an Upstash Redis database and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in `.env.local` for distributed rate limiting. API requests are limited by IP and path; password-authentication requests have a stricter limit. Without these variables, a best-effort in-memory fallback is used only during local development; production requests fail closed with `503`. Never expose the Redis token in client-side variables.
 
 ## Security notes before real deployment
 

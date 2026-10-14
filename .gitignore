@@ -18,3 +18,5 @@ coverage
 .validators-test-module.cjs
 .crawler-test-module.cjs
 *.tsbuildinfo
+
+.vercel

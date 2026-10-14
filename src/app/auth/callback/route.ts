@@ -33,6 +33,9 @@ export async function GET(request: Request) {
       loginUrl.searchParams.set("error", "code_exchange_failed");
       return NextResponse.redirect(loginUrl);
     }
+    if (requestUrl.searchParams.get("type") === "recovery") {
+      return NextResponse.redirect(new URL("/reset-password", appUrl));
+    }
     return NextResponse.redirect(new URL("/", appUrl));
   } catch (error) {
     console.error("Auth callback configuration/runtime failure:", error instanceof Error ? error.message : "unknown");

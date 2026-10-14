@@ -42,6 +42,9 @@ Next.js ESLint configuration, so it has not been applied.
 - Supabase Auth publicly reports the Email provider enabled, registration
   enabled, and email confirmation required. A production password request with
   deliberately invalid credentials returned the expected generic HTTP 401.
+- Recently registered accounts now receive a non-enumerating reminder to
+  confirm their email if password sign-in fails for that reason. A real
+  account's successful login and session creation remain unverified.
 - The production auth redirect allowlist, actual email delivery, account
   registration, recovery email, and successful session creation have not been
   verified.
@@ -50,7 +53,7 @@ Next.js ESLint configuration, so it has not been applied.
 
 The Vercel production project has its Supabase URL/key, field encryption key,
 application URL, and Upstash REST credentials configured. Commit
-`1822e45` is deployed and Ready at `https://digitalshield-ten.vercel.app`.
+`5f973ef` is deployed and Ready at `https://digitalshield-ten.vercel.app`.
 Production `/`, `/login`, and `/reset-password` returned HTTP 200;
 `/api/health` reports Supabase and field encryption configured; unauthenticated
 private API routes return HTTP 401. Upstash connectivity was verified with

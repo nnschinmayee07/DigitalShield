@@ -39,11 +39,22 @@ Next.js ESLint configuration, so it has not been applied.
   or findings evidence columns. Removal-request and evidence workflows remain
   blocked until migrations `0002_removal_requests.sql` and
   `0003_finding_evidence.sql` are applied or the schema cache is refreshed.
+- Supabase Auth publicly reports the Email provider enabled, registration
+  enabled, and email confirmation required. A production password request with
+  deliberately invalid credentials returned the expected generic HTTP 401.
+- The production auth redirect allowlist, actual email delivery, account
+  registration, recovery email, and successful session creation have not been
+  verified.
 
 ## Deployment
 
 The Vercel production project has its Supabase URL/key, field encryption key,
-application URL, and Upstash REST credentials configured. Deploy and verify
-the latest commit before treating hosting as complete. Add the deployed
-`/auth/callback` URL to the Supabase Auth redirect allowlist. Production API
+application URL, and Upstash REST credentials configured. Commit
+`1822e45` is deployed and Ready at `https://digitalshield-ten.vercel.app`.
+Production `/`, `/login`, and `/reset-password` returned HTTP 200;
+`/api/health` reports Supabase and field encryption configured; unauthenticated
+private API routes return HTTP 401. Upstash connectivity was verified with
+`PING`/`PONG`. Add `https://digitalshield-ten.vercel.app/auth/callback` to the
+Supabase Auth redirect allowlist and configure custom SMTP delivery before
+relying on account confirmation and password recovery emails. Production API
 routes fail closed with `503` if Upstash rate limiting is unavailable.

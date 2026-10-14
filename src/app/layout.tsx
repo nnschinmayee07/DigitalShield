@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./accessibility.css";
+import "./visual-refresh.css";
 
 export const metadata: Metadata = {
   title: "DigitalShield — Privacy Command Center",

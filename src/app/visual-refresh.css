@@ -1,0 +1,461 @@
+:root {
+  --ink: #183436;
+  --muted: #647b78;
+  --line: #dfe9e3;
+  --purple: #147d73;
+  --purple-dark: #0f625d;
+  --bg: #f3f6f1;
+  --green: #197a60;
+  --orange: #bd6846;
+}
+
+html,
+body {
+  background: var(--bg);
+}
+
+.app-shell {
+  background:
+    radial-gradient(ellipse at 87% 8%, rgba(211, 228, 207, 0.3), transparent 34%),
+    var(--bg);
+}
+
+.sidebar {
+  color: #edf5ed;
+  background: #123537;
+  border-right-color: #234849;
+}
+
+.brand-mark {
+  color: #f2c879;
+  background: #244b49;
+}
+
+.brand strong,
+.brand strong span {
+  color: #f2f6ed;
+}
+
+.brand small {
+  color: #9cb8ae;
+}
+
+.workspace-label {
+  color: #8da9a1;
+}
+
+.nav-item {
+  color: #b1c7c0;
+}
+
+.nav-item:hover {
+  color: #fff;
+  background: #1d4444;
+}
+
+.nav-item.active {
+  color: #f6d28b;
+  background: #254b49;
+}
+
+.nav-item.active .glyph {
+  color: #f6d28b;
+}
+
+.nav-item em {
+  color: #f6d28b;
+  background: #173d3d;
+  border-color: #42615a;
+}
+
+.shield-card {
+  color: #edf5ed;
+  background: linear-gradient(145deg, #1b4544, #173c3d);
+  border-color: #315755;
+}
+
+.shield-card p,
+.shield-card small {
+  color: #acc4ba;
+}
+
+.mini-shield {
+  color: #f6d28b;
+  background: #315b55;
+}
+
+.shield-line span {
+  background: #477870;
+}
+
+.shield-line span:nth-child(4) {
+  background: #f2c879;
+}
+
+.profile-row {
+  border-top-color: #31504f;
+}
+
+.avatar {
+  color: #123537;
+  background: #f2c879;
+}
+
+.profile-copy strong {
+  color: #edf5ed;
+}
+
+.profile-copy small {
+  color: #a4bcb3;
+}
+
+.icon-button {
+  color: #bbd0c8;
+}
+
+.icon-button:hover {
+  color: #fff;
+  background: #244b49;
+}
+
+.main-area {
+  background: transparent;
+}
+
+.topbar {
+  background: rgba(249, 251, 247, 0.9);
+  border-bottom-color: var(--line);
+}
+
+.breadcrumb span,
+.breadcrumb b {
+  color: #80918b;
+}
+
+.breadcrumb strong {
+  color: var(--ink);
+}
+
+.button-primary {
+  color: #fff;
+  background: #147d73;
+  box-shadow: 0 5px 14px rgba(20, 125, 115, 0.2);
+}
+
+.button-primary:hover {
+  background: #0f625d;
+}
+
+.button-quiet {
+  color: #315957;
+  background: #fff;
+  border-color: #d8e5dd;
+}
+
+.button-quiet:hover {
+  background: #eef5ef;
+}
+
+.preview-banner {
+  color: #72521c;
+  background: #fff7e7;
+  border-color: #f0dfb9;
+}
+
+.preview-dot {
+  background: #c18431;
+  box-shadow: 0 0 0 3px #f5e8cb;
+}
+
+.preview-banner a {
+  color: #78541b;
+}
+
+.notice {
+  color: #215e4c;
+  background: #e8f4ec;
+  border-color: #cee5d4;
+}
+
+.eyebrow {
+  color: #a2653f;
+}
+
+.page-heading h1 {
+  color: #183436;
+}
+
+.page-heading p {
+  color: #647b78;
+}
+
+.stat-card,
+.panel {
+  background: rgba(255, 255, 252, 0.94);
+  border-color: #dfe9e3;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(27, 63, 53, 0.045);
+}
+
+.stat-card {
+  min-height: 164px;
+}
+
+.stat-icon.purple {
+  color: #147d73;
+  background: #e4f2ec;
+}
+
+.stat-icon.blue {
+  color: #397b8a;
+  background: #e7f1f1;
+}
+
+.stat-icon.orange {
+  color: #ad603e;
+  background: #fbede3;
+}
+
+.stat-icon.green {
+  color: #197a60;
+  background: #e5f3e9;
+}
+
+.stat-spark span {
+  background: #9bcfc0;
+}
+
+.stat-spark.blue span {
+  background: #a5cbd0;
+}
+
+.stat-spark.orange span {
+  background: #e8b899;
+}
+
+.stat-spark.green span {
+  background: #a8d4b8;
+}
+
+.panel-head h2 {
+  color: #193b3a;
+}
+
+.panel-head p,
+.compact-copy p,
+.score-copy p,
+.info-panel p {
+  color: #687f7a;
+}
+
+.text-button {
+  color: #147d73;
+}
+
+.text-button:hover {
+  color: #a45f3b;
+}
+
+.finding-icon.low {
+  color: #197a60;
+  background: #e5f3e9;
+}
+
+.finding-icon.high {
+  color: #ad603e;
+  background: #fbede3;
+}
+
+.status-pill.orange {
+  color: #995132;
+  background: #fbede3;
+}
+
+.status-pill.green {
+  color: #176b53;
+  background: #e5f3e9;
+}
+
+.status-pill.neutral {
+  color: #516b67;
+  background: #edf2ed;
+}
+
+.score-ring {
+  background: conic-gradient(#188c7d 0deg, #188c7d 245deg, #e3eee5 245deg, #e3eee5 360deg);
+}
+
+.score-ring:before {
+  background: #fff;
+}
+
+.score-ring span {
+  color: #718782;
+}
+
+.score-copy strong,
+.posture-row strong {
+  color: #183f3c;
+}
+
+.posture-row {
+  border-top-color: #e8eee8;
+}
+
+.posture-row span {
+  color: #607873;
+}
+
+.purple-dot {
+  background: #188c7d;
+}
+
+.blue-dot {
+  background: #5796a0;
+}
+
+.orange-dot {
+  background: #c18455;
+}
+
+.privacy-note {
+  background: #edf5ed;
+}
+
+.privacy-note span {
+  color: #147d73;
+}
+
+.privacy-note p {
+  color: #536f67;
+}
+
+.quick-action {
+  border-color: transparent;
+}
+
+.quick-action:hover {
+  background: #f0f6ef;
+  border-color: #dceade;
+}
+
+.quick-icon {
+  color: #147d73;
+  background: #e4f2ec;
+}
+
+.quick-copy strong {
+  color: #244542;
+}
+
+.quick-copy small {
+  color: #6d837d;
+}
+
+.quick-arrow {
+  color: #73928a;
+}
+
+.footer {
+  color: #71857e;
+}
+
+.footer b {
+  color: #bac9bf;
+}
+
+.connection.online i,
+.footer i {
+  background: #25886a;
+  box-shadow: 0 0 0 3px #e0f1e6;
+}
+
+.connection.offline i {
+  background: #bd6846;
+}
+
+.form-grid label {
+  color: #385a54;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  color: #183436;
+  background: #fff;
+  border-color: #d5e3db;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  border-color: #258b7c;
+  box-shadow: 0 0 0 3px rgba(37, 139, 124, 0.14);
+}
+
+.form-grid input::placeholder,
+.form-grid textarea::placeholder {
+  color: #8b9d95;
+}
+
+.table-panel th {
+  color: #5d746e;
+  background: #f1f6f0;
+}
+
+.table-panel td {
+  color: #294845;
+  border-top-color: #e7eee8;
+}
+
+.table-panel tbody tr:hover {
+  background: #f4f8f2;
+}
+
+.muted,
+.empty-state p,
+.finding-main > p,
+.finding-meta {
+  color: #6e837d;
+}
+
+.small-action {
+  color: #147d73;
+  background: #e8f3ed;
+}
+
+.small-action:hover {
+  background: #d9ebe1;
+}
+
+.info-panel {
+  background: #edf5ed;
+  border-color: #d9e8da;
+}
+
+.info-icon {
+  color: #147d73;
+  background: #dceee4;
+}
+
+:focus-visible {
+  outline: 3px solid #cf9a4d;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stat-card,
+  .panel {
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .stat-card:hover,
+  .panel:hover {
+    border-color: #ccded1;
+    box-shadow: 0 12px 30px rgba(27, 63, 53, 0.075);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+}

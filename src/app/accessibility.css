@@ -1,0 +1,64 @@
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--purple) 78%, white);
+  outline-offset: 2px;
+}
+
+.button,
+.icon-button,
+.small-action,
+.text-button,
+.quick-action {
+  min-height: 44px;
+}
+
+.icon-button {
+  min-width: 44px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.button,
+.small-action,
+.quick-action {
+  touch-action: manipulation;
+}
+
+.glyph svg {
+  display: block;
+}
+
+.finding-meta a {
+  color: var(--purple-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.empty-state > svg {
+  flex: none;
+  color: var(--purple);
+}
+
+.source-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.scan-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

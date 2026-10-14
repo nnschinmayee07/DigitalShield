@@ -11,7 +11,7 @@ A unified Next.js App Router + TypeScript + Supabase application with a responsi
 - PostgreSQL schema with Row Level Security (RLS) and ownership policies.
 - Identity CRUD; sensitive `private_notes` encrypted server-side with AES-256-GCM.
 - Source registry CRUD; new sources are `unverified`, and only `authorized` sources are eligible for monitoring.
-- Findings listing/resolution, audit event listing, and a demo-only monitoring endpoint.
+- Findings listing/resolution, audit event listing, manual evidence reports, and an authorized public-page crawler.
 - Zod request validation and consistent JSON error responses.
 
 ## 1. Requirements
@@ -51,6 +51,10 @@ npm run dev
 
 Open http://localhost:3001. Check `GET /api/health` for configuration status. The health route never returns secrets.
 
+## Deploy to Vercel
+
+Import `nnschinmayee07/DigitalShield` in Vercel as a Next.js project. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `FIELD_ENCRYPTION_KEY`, `NEXT_PUBLIC_APP_URL`, `UPSTASH_REDIS_REST_URL`, and `UPSTASH_REDIS_REST_TOKEN` to the Vercel environment settings. API routes fail closed with `503` in production if Upstash rate limiting is not configured. Set `NEXT_PUBLIC_APP_URL` to the deployed HTTPS origin, then add `<deployed-origin>/auth/callback` to the Supabase Auth redirect allowlist. Apply all database migrations before using authenticated routes. Keep server secrets out of `NEXT_PUBLIC_` variables and source control.
+
 ## Automated checks
 
 Run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`. Or run `npm run check` to run all four in sequence. The tests cover AES-256-GCM round-trips/tamper detection and core identity payload validation. A successful local build does not replace an end-to-end test against your own Supabase project.
@@ -81,7 +85,7 @@ All data routes require a valid Supabase user session except the public health c
 | POST | `/api/auth/magic-link` | Rate-limited email sign-in link request |
 | GET | `/api/auth/me` | Verify the current session |
 | POST | `/api/auth/logout` | End the current session |
-| POST | `/api/monitor` | Demo-only check of authorized sources |
+| POST | `/api/monitor` | Crawl one authorized source with `{ "sourceId": "..." }` |
 
 ### Example: create an identity
 
@@ -96,17 +100,19 @@ This example assumes you send an authenticated session cookie (adjust port if yo
 ### Source status rules
 
 - A source created through the API is always `unverified`; clients cannot self-assert authorization in the create request.
-- Transitioning to `authorized` is an explicit user action and records an audit event. In a production system, add an ownership/permission verification flow before enabling this transition.
-- The monitoring route only considers `authorized` sources. Its current adapter generates clearly labeled demo findings; it does not crawl the internet or query breach services.
+- Transitioning to `authorized` is an explicit user attestation and records an audit event; it does not independently verify ownership or consent.
+- The crawler only considers a source owned by the signed-in user and currently marked `authorized`. It checks up to four public HTML pages below the registered path and the 100 most recently added supported identities, follows same-origin links only, rejects private/reserved DNS results and redirects, respects `robots.txt` and crawl-delay, caps response sizes and total request time, and allows one scan per source per minute.
+- Scans compare public page text against the signed-in user's saved email, phone, username, and social-profile identifiers. Possible matches require manual review; only the evidence URL and identifier category are stored, not the matched value or page contents. The crawler does not query search engines, breach databases, authenticated pages, or third-party takedown APIs.
+- Source authorization is self-attested, so verify ownership/permission before enabling real scans. Do not scan sources without permission.
 - Removing a source deletes only the DigitalShield registry row; it cannot remove content hosted by another service. Removal requests track provider remediation, but do not automatically delete third-party content; use the provider's authorized takedown or credential-reset process.
 
 ## Redis rate limiting
 
-For distributed rate limiting, create an Upstash Redis database and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in `.env.local`. API requests are limited by IP and path; magic-link requests have a stricter limit. Without these variables, a best-effort in-memory fallback is used for local development only and is not suitable for multi-instance production. Never expose the Redis token in client-side variables.
+Create an Upstash Redis database and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in `.env.local` for distributed rate limiting. API requests are limited by IP and path; magic-link requests have a stricter limit. Without these variables, a best-effort in-memory fallback is used only during local development; production requests fail closed with `503`. Never expose the Redis token in client-side variables.
 
 ## Security notes before real deployment
 
-This is a strong starting scaffold, not a completed security audit. Before production: implement email verification and recovery UX, verify source ownership/consent, add distributed rate limiting, configure CSP/security headers, review data retention/deletion, add tests and dependency scanning, configure Supabase backups, and conduct a security review. The included in-memory limits are intentionally not represented as distributed protection. Keep encryption keys backed up securely; losing the key makes encrypted notes unrecoverable. Rotating the key requires a migration/re-encryption procedure.
+This is a strong starting scaffold, not a completed security audit. Before production: implement email verification and recovery UX, independently verify source ownership/consent, configure Upstash distributed rate limiting, configure CSP/security headers, review data retention/deletion, configure Supabase backups, and conduct a security review. The included in-memory rate-limit fallback is not suitable for multi-instance production. Keep encryption keys backed up securely; losing the key makes encrypted notes unrecoverable. Rotating the key requires a migration/re-encryption procedure.
 
-The demo monitoring adapter is not evidence of real exposure. `POST /api/findings/report` records evidence metadata from an authorized provider or user-submitted report; it does not crawl threat sites. The linked Cryptography-final-year-project repository currently exposes a README describing a classical multi-cipher concept, not the implementation source. Do not use classical ciphers for storing real credentials; AES-256-GCM remains the storage encryption. Any actual exposure provider or takedown integration must be authorized and configured separately. Do not scan or collect data from sources without authorization.
+Crawler results are heuristic and are not independently verified evidence of exposure. `POST /api/findings/report` records evidence metadata from an authorized provider or user-submitted report; it does not crawl threat sites. The linked Cryptography-final-year-project repository currently exposes a README describing a classical multi-cipher concept, not the implementation source. Do not use classical ciphers for storing real credentials; AES-256-GCM remains the storage encryption. Any additional exposure-provider or takedown integration must be authorized and configured separately.
 "# DigitalShield" 

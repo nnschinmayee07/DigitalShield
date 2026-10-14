@@ -41,6 +41,14 @@ async function rateLimit(request: NextRequest) {
     }
   }
   // Local-development fallback only. Use Upstash credentials for distributed production rate limiting.
+  if (process.env.NODE_ENV === "production") {
+    console.error("Production rate limiting is not configured.");
+    return NextResponse.json(
+      { error: { message: "Rate-limit service is not configured. Please contact the administrator." } },
+      { status: 503 },
+    );
+  }
+
   const now = Date.now();
   const entry = memoryBuckets.get(key);
   const max = path === "/api/auth/magic-link" ? 5 : 60;

@@ -26,7 +26,7 @@ Base URL during local development: `http://localhost:3001`. JSON requests should
 | GET | `/api/findings?status=open` | optional status filter | `{ data: finding[] }` |
 | POST | `/api/findings/report` | `{ sourceId?, providerName, title, severity?, evidenceUrl, evidenceSummary }` | `{ data: finding, note }` |
 | PATCH | `/api/findings/:id` | `{ status }` | `{ data: finding status summary }` |
-| POST | `/api/monitor` | none | `{ data: { mode: "demo", checkedSources, createdFindings, warning } }` |
+| POST | `/api/monitor` | `{ sourceId }` for a user-owned `authorized` source | `{ data: { source, pagesVisited, matchesFound, identitiesChecked, identitiesTruncated, newFindings, blockedByRobots, limitReached, warning } }` |
 | GET/POST | `/api/removal-requests` | POST `{ findingId?, kind?, targetUrl, providerName, notes? }` | list / `{ data: request, note }` |
 | PATCH | `/api/removal-requests/:id` | `{ status?, externalReference?, notes? }` | `{ data: request }` |
 | GET | `/api/audit-logs` | none | `{ data: auditLog[] }` |
@@ -85,6 +85,16 @@ Base URL during local development: `http://localhost:3001`. JSON requests should
 
 New sources always start `unverified`. To change the status to `authorized`, PATCH `/api/sources/:id` with `{ "status": "authorized", "authorizationNote": "I own this domain and authorize checks." }`. This is an explicit user attestation, not an external ownership verification.
 
+### Authorized source scan
+
+```json
+{
+  "sourceId": "5be7e76a-a4f5-4b8c-90d0-4b7e2e6d9c10"
+}
+```
+
+`POST /api/monitor` requires a signed-in user, a source owned by that user and marked `authorized`, and at least one saved email, phone number, username, or social profile. It checks at most four public HTML pages beneath the registered URL path and the 100 most recently added supported identifiers, follows same-origin links only, honors `robots.txt` and crawl-delay, caps responses at 1 MiB, limits each source to one scan per minute, and stops after 20 seconds. Private/reserved IP addresses, nonstandard ports, and redirects outside the registered origin/path are rejected. Potential matches are heuristic; the matched value and fetched page contents are not stored. Review any result manually.
+
 ### Exposure report request
 
 ```json
@@ -116,7 +126,7 @@ This records and tracks a request only. It does not automatically contact the pr
 
 - Display a login state from `/api/auth/me`; handle 401 as signed out.
 - Show loading, empty, success, and error states for every list.
-- Show a visible “Demo data” label whenever `is_demo` is true and for the `/api/monitor` result.
+- Show a visible “Demo data” label when `is_demo` is true. `/api/monitor` results are live heuristic checks and must be described as possible matches, not verified exposure.
 - Ask for confirmation before DELETE actions or status changes.
 - Do not put the Supabase service-role key, encryption key, or Upstash token in frontend variables.
 - Prefer a shared fetch helper that parses `{ data }` and `{ error }` envelopes consistently.

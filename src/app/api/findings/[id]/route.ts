@@ -11,7 +11,10 @@ export async function PATCH(request: Request, context: Context) {
  let parsed; try { parsed = updateFindingSchema.safeParse(await readJson(request)); } catch { return jsonError("Request body must be valid JSON."); }
  if (!parsed.success) return jsonError("Invalid finding payload.", 422, parsed.error.flatten());
  const status = parsed.data.status;
- const { data, error } = await auth.supabase.from("findings").update({ status, resolved_at: status === "resolved" ? new Date().toISOString() : null }).eq("id", id).select("id,title,status,resolved_at").maybeSingle();
+ const { data, error } = await auth.supabase.from("findings").update({ status, resolved_at: status === "resolved" ? new Date().toISOString() : null }).eq("id", id)
+.eq("user_id", auth.user.id)
+.select("id,title,status,resolved_at")
+.maybeSingle();
  if (error) return internalError(error); if (!data) return jsonError("Finding not found.", 404);
  try { await writeAudit(auth.supabase, auth.user.id, `finding.${status}`, "finding", id, { status }); } catch (e) { return internalError(e); }
  return NextResponse.json({ data });

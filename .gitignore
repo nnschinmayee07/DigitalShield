@@ -16,3 +16,5 @@ coverage
 # Temporary compiled modules used by node:test
 .crypto-test-module.cjs
 .validators-test-module.cjs
+.crawler-test-module.cjs
+*.tsbuildinfo

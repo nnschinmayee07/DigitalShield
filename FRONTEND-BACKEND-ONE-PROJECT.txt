@@ -1,0 +1,21 @@
+DIGITALSHIELD — ONE PROJECT QUICK START (WINDOWS)
+
+1. Extract this ZIP into a new folder, for example E:\projects\DS\DigitalShield.
+2. Copy your existing .env.local privately from digitalshield-backend-v7 into this new folder. Do not upload or share that file.
+   If you do not have it, copy .env.example to .env.local and fill in the Supabase URL, publishable/anon key, and FIELD_ENCRYPTION_KEY.
+3. Open this folder in VS Code.
+4. In Terminal, run:
+      npm install
+      npm run check
+5. Start the app:
+      npm run dev
+6. Open http://localhost:3001
+
+You can also double-click START-DIGITALSHIELD.bat to start it after extraction.
+
+IMPORTANT
+- The dashboard shows clearly labelled sample records until you sign in. Signed-in data is loaded from your Supabase project.
+- Run any missing SQL migrations in supabase/migrations in numeric order in Supabase SQL Editor. Do not rerun migrations already applied.
+- Demo monitoring creates synthetic findings only; it does not scan the internet or check breach databases.
+- Removal requests are a tracker and do not automatically remove content from third-party sites.
+- Do not run `npm audit fix --force` without reviewing the breaking changes first.

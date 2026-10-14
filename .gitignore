@@ -1,0 +1,18 @@
+node_modules
+.next
+out
+build
+.env
+.env.local
+.env.*.local
+!.env.example
+coverage
+.DS_Store
+
+# Local environment and secrets
+.env*
+!.env.example
+
+# Temporary compiled modules used by node:test
+.crypto-test-module.cjs
+.validators-test-module.cjs

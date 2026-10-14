@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { createSupabaseRouteHandlerClient } from "@/lib/supabase/server";
+
 export async function POST() {
-  const auth = await requireUser();
-  if ("response" in auth) return auth.response;
-  const { error } = await auth.supabase.auth.signOut();
-  if (error) return NextResponse.json({ error: { message: "Could not end session." } }, { status: 500 });
-  return NextResponse.json({ ok: true });
+  try {
+    const { supabase, applyToResponse } = await createSupabaseRouteHandlerClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) return NextResponse.json({ error: { message: "Could not end session." } }, { status: 500 });
+    return applyToResponse(NextResponse.json({ ok: true }));
+  } catch {
+    return NextResponse.json({ error: { message: "Authentication service is not configured." } }, { status: 503 });
+  }
 }

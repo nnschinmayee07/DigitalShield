@@ -41,6 +41,10 @@ export async function POST(request: Request) {
     evidence_summary: input.evidenceSummary,
   }).select("id,source_id,title,description,severity,status,is_demo,provider_name,evidence_url,evidence_summary,detected_at,resolved_at,created_at").single();
   if (error) return internalError(error);
-  await writeAudit(auth.supabase, auth.user.id, "finding.reported", "finding", data.id, { severity: data.severity, providerName: data.provider_name });
+  try {
+    await writeAudit(auth.supabase, auth.user.id, "finding.reported", "finding", data.id, { severity: data.severity, providerName: data.provider_name });
+  } catch (auditError) {
+    console.error("Audit write failed after finding report:", auditError);
+  }
   return NextResponse.json({ data, note: "Exposure report recorded. This endpoint does not crawl or access the linked site." }, { status: 201 });
 }

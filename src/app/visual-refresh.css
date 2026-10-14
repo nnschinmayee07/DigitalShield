@@ -62,6 +62,10 @@ body {
   color: #f6d28b;
 }
 
+.nav-active-rail {
+  background: #f6d28b;
+}
+
 .nav-item em {
   color: #f6d28b;
   background: #173d3d;

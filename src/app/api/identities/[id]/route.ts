@@ -28,7 +28,7 @@ export async function PATCH(request: Request, context: Context) {
     if (input.privateNotes !== undefined) { const enc = input.privateNotes ? encryptField(input.privateNotes) : null; update.private_notes_ciphertext = enc?.ciphertext ?? null; update.private_notes_iv = enc?.iv ?? null; update.private_notes_tag = enc?.tag ?? null; }
     const { data, error } = await auth.supabase.from("identities").update(update).eq("id", id).select("id,label,kind,identifier,created_at,updated_at").maybeSingle();
     if (error) return internalError(error); if (!data) return jsonError("Identity not found.", 404);
-    await writeAudit(auth.supabase, auth.user.id, "identity.updated", "identity", id, { fields: Object.keys(input) });
+    try { await writeAudit(auth.supabase, auth.user.id, "identity.updated", "identity", id, { fields: Object.keys(input) }); } catch (auditError) { console.error("Audit write failed after identity update:", auditError); }
     return NextResponse.json({ data });
   } catch (e) { return internalError(e); }
 }
@@ -37,6 +37,6 @@ export async function DELETE(_request: Request, context: Context) {
   const { id } = await context.params; if (!uuid.test(id)) return jsonError("Invalid identity id.", 400);
   const { data, error } = await auth.supabase.from("identities").delete().eq("id", id).select("id").maybeSingle();
   if (error) return internalError(error); if (!data) return jsonError("Identity not found.", 404);
-  try { await writeAudit(auth.supabase, auth.user.id, "identity.deleted", "identity", id); } catch (e) { return internalError(e); }
+  try { await writeAudit(auth.supabase, auth.user.id, "identity.deleted", "identity", id); } catch (auditError) { console.error("Audit write failed after identity delete:", auditError); }
   return NextResponse.json({ ok: true, id });
 }

@@ -15,7 +15,7 @@ const createSchema = z.object({
 export async function GET() {
   const auth = await requireUser();
   if ("response" in auth) return auth.response;
-  const { data, error } = await auth.supabase.from("removal_requests").select("id,finding_id,kind,status,target_url,provider_name,notes,external_reference,created_at,updated_at").order("created_at", { ascending: false }).limit(100);
+  const { data, error } = await auth.supabase.from("removal_requests").select("id,finding_id,kind,status,target_url,provider_name,notes,external_reference,created_at,updated_at").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(100);
   if (error) return internalError(error);
   return NextResponse.json({ data: data ?? [] });
 }
@@ -43,6 +43,10 @@ export async function POST(request: Request) {
     status: "draft",
   }).select("id,finding_id,kind,status,target_url,provider_name,notes,external_reference,created_at,updated_at").single();
   if (error) return internalError(error);
-  await writeAudit(auth.supabase, auth.user.id, "removal_request.created", "removal_request", data.id, { kind: data.kind, status: data.status });
+  try {
+    await writeAudit(auth.supabase, auth.user.id, "removal_request.created", "removal_request", data.id, { kind: data.kind, status: data.status });
+  } catch (auditError) {
+    console.error("Audit write failed after removal_request insert:", auditError);
+  }
   return NextResponse.json({ data, note: "Request recorded. This does not automatically remove third-party content; submit it through the provider's authorized removal process." }, { status: 201 });
 }

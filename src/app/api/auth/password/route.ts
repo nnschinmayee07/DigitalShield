@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseRouteHandlerClient } from "@/lib/supabase/server";
 import { jsonError, readJson } from "@/lib/http";
 import { passwordAuthSchema } from "@/lib/auth-schemas";
 
@@ -25,9 +25,10 @@ export async function POST(request: Request) {
   if (!parsed.success) return jsonError("Check the email and password fields.", 400, parsed.error.flatten());
   const input = parsed.data;
 
-  let supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+  let supabase: Awaited<ReturnType<typeof createSupabaseRouteHandlerClient>>["supabase"];
+  let applyToResponse: Awaited<ReturnType<typeof createSupabaseRouteHandlerClient>>["applyToResponse"];
   try {
-    supabase = await createSupabaseServerClient();
+    ({ supabase, applyToResponse } = await createSupabaseRouteHandlerClient());
   } catch (error) {
     console.error("Could not initialize Supabase password authentication.", error instanceof Error ? error.name : "unknown");
     return jsonError("Authentication is not configured.", 503);
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
       }
       return jsonError("Email or password is incorrect.", 401);
     }
-    return NextResponse.json({ ok: true, authenticated: true });
+    return applyToResponse(NextResponse.json({ ok: true, authenticated: true }));
   }
 
   if (input.action === "sign-up") {
@@ -71,11 +72,11 @@ export async function POST(request: Request) {
       });
       return jsonError("Could not create the account. Check the details and try again.", 400);
     }
-    return NextResponse.json({
+    return applyToResponse(NextResponse.json({
       ok: true,
       authenticated: Boolean(data.session),
       confirmationRequired: !data.session,
-    }, { status: 201 });
+    }, { status: 201 }));
   }
 
   if (input.action === "reset-password") {
@@ -107,5 +108,5 @@ export async function POST(request: Request) {
     });
     return jsonError("The password could not be updated. Request a new reset email and try again.", 400);
   }
-  return NextResponse.json({ ok: true, message: "Your password has been updated." });
+  return applyToResponse(NextResponse.json({ ok: true, message: "Your password has been updated." }));
 }

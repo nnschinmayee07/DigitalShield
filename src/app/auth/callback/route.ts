@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseRouteHandlerClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -7,7 +7,6 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get("code");
   const providerError = requestUrl.searchParams.get("error");
 
-  // Never log auth codes, access tokens, or complete callback URLs.
   if (providerError) {
     console.warn("Supabase auth callback returned an error:", providerError);
     const loginUrl = new URL("/login", appUrl);
@@ -25,7 +24,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const supabase = await createSupabaseServerClient();
+    const { supabase, applyToResponse } = await createSupabaseRouteHandlerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       console.error("Supabase code exchange failed:", error.message);
@@ -33,10 +32,10 @@ export async function GET(request: Request) {
       loginUrl.searchParams.set("error", "code_exchange_failed");
       return NextResponse.redirect(loginUrl);
     }
-    if (requestUrl.searchParams.get("type") === "recovery") {
-      return NextResponse.redirect(new URL("/reset-password", appUrl));
-    }
-    return NextResponse.redirect(new URL("/", appUrl));
+    const dest = requestUrl.searchParams.get("type") === "recovery"
+      ? new URL("/reset-password", appUrl)
+      : new URL("/", appUrl);
+    return applyToResponse(NextResponse.redirect(dest));
   } catch (error) {
     console.error("Auth callback configuration/runtime failure:", error instanceof Error ? error.message : "unknown");
     const loginUrl = new URL("/login", appUrl);

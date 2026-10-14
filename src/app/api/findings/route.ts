@@ -106,8 +106,9 @@ export async function POST(request: Request) {
         isDemo: false,
       }
     );
-  } catch (error) {
-    return internalError(error);
+  } catch (auditError) {
+    // Audit failure is non-fatal: finding was saved successfully.
+    console.error("Audit write failed after finding insert:", auditError);
   }
 
   return NextResponse.json(

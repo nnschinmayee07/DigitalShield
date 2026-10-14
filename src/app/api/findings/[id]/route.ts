@@ -16,6 +16,6 @@ export async function PATCH(request: Request, context: Context) {
 .select("id,title,status,resolved_at")
 .maybeSingle();
  if (error) return internalError(error); if (!data) return jsonError("Finding not found.", 404);
- try { await writeAudit(auth.supabase, auth.user.id, `finding.${status}`, "finding", id, { status }); } catch (e) { return internalError(e); }
+ try { await writeAudit(auth.supabase, auth.user.id, `finding.${status}`, "finding", id, { status }); } catch (auditError) { console.error("Audit write failed after finding update:", auditError); }
  return NextResponse.json({ data });
 }

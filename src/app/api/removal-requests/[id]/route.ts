@@ -19,9 +19,13 @@ export async function PATCH(request: Request, context: Context) {
   if (parsed.data.status !== undefined) patch.status = parsed.data.status;
   if (parsed.data.externalReference !== undefined) patch.external_reference = parsed.data.externalReference;
   if (parsed.data.notes !== undefined) patch.notes = parsed.data.notes;
-  const { data, error } = await auth.supabase.from("removal_requests").update(patch).eq("id", id).select("id,finding_id,kind,status,target_url,provider_name,notes,external_reference,created_at,updated_at").maybeSingle();
+  const { data, error } = await auth.supabase.from("removal_requests").update(patch).eq("id", id).eq("user_id", auth.user.id).select("id,finding_id,kind,status,target_url,provider_name,notes,external_reference,created_at,updated_at").maybeSingle();
   if (error) return internalError(error);
   if (!data) return jsonError("Removal request not found.", 404);
-  await writeAudit(auth.supabase, auth.user.id, "removal_request.updated", "removal_request", data.id, { status: data.status });
+  try {
+    await writeAudit(auth.supabase, auth.user.id, "removal_request.updated", "removal_request", data.id, { status: data.status });
+  } catch (auditError) {
+    console.error("Audit write failed after removal_request update:", auditError);
+  }
   return NextResponse.json({ data });
 }

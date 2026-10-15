@@ -181,8 +181,8 @@ export async function POST(request: Request) {
         blockedByRobots: scan.blockedByRobots,
       },
     );
-  } catch (error) {
-    return internalError(error);
+  } catch (auditError) {
+    console.error("Audit write failed after scan:", auditError);
   }
 
   const warnings = [];

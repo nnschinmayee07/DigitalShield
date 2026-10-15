@@ -705,3 +705,167 @@ body {
     transform: translateY(-2px);
   }
 }
+
+/* ── Scan overlay ─────────────────────────────────────────── */
+.scan-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(10, 26, 20, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-modal {
+  background: #0f1f18;
+  border: 1px solid #1e3d2e;
+  border-radius: 24px;
+  padding: 48px 40px 44px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Radar rings */
+.scan-radar {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.scan-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #3ecf8e;
+}
+
+.scan-ring-1 { opacity: 0.6; }
+.scan-ring-2 { opacity: 0.5; }
+.scan-ring-3 { opacity: 0.4; }
+
+.scan-core {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #1a3d2d;
+  border: 1.5px solid #2e6e4f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3ecf8e;
+  position: relative;
+  z-index: 1;
+}
+
+.scan-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e8f0eb;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.scan-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.scan-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #5a7a68;
+  transition: color 0.3s;
+}
+
+.scan-step.active { color: #a8d5be; }
+.scan-step.done { color: #3ecf8e; }
+
+.scan-step-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.scan-step.active .scan-step-dot {
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.scan-step-check {
+  margin-left: auto;
+  color: #3ecf8e;
+  flex-shrink: 0;
+}
+
+/* Result */
+.scan-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.scan-result-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-result-icon.found {
+  background: rgba(220, 80, 60, 0.15);
+  color: #f87060;
+  border: 1.5px solid rgba(220, 80, 60, 0.3);
+}
+
+.scan-result-icon.clear {
+  background: rgba(62, 207, 142, 0.12);
+  color: #3ecf8e;
+  border: 1.5px solid rgba(62, 207, 142, 0.3);
+}
+
+.scan-subtitle {
+  font-size: 15px;
+  color: #a8d5be;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.scan-hint {
+  font-size: 12.5px;
+  color: #4d7a62;
+  margin: 0;
+}
+
+.scan-close-btn {
+  margin-top: 6px;
+  width: 100%;
+  justify-content: center;
+}

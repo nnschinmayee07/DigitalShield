@@ -5,8 +5,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Activity,
+  AlertTriangle,
+  CheckCircle2,
   FileSearch,
   Fingerprint,
+  Globe,
   House,
   LogOut,
   RefreshCw,
@@ -79,6 +82,8 @@ export default function Home() {
   const [userEmail, setUserEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [scanStep, setScanStep] = useState(0);
+  const [scanResult, setScanResult] = useState<{ newFindings: number; identitiesScanned: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [apiOnline, setApiOnline] = useState(false);
@@ -139,24 +144,35 @@ export default function Home() {
 
   async function scanInternet() {
     setScanning(true);
+    setScanResult(null);
+    setScanStep(0);
     setNotice("");
+    // Animate through steps while the real request runs
+    const stepTimer1 = setTimeout(() => setScanStep(1), 1200);
+    const stepTimer2 = setTimeout(() => setScanStep(2), 3000);
+    const stepTimer3 = setTimeout(() => setScanStep(3), 5500);
     try {
       const response = await fetch("/api/monitor", { method: "POST" });
       const result = await response.json();
+      clearTimeout(stepTimer1); clearTimeout(stepTimer2); clearTimeout(stepTimer3);
       if (!response.ok) throw new Error(result?.error?.message || "Scan failed.");
-      const { identitiesScanned, newFindings, warning } = result.data;
-      setNotice(
-        newFindings > 0
-          ? `Scan complete — ${newFindings} new exposure${newFindings > 1 ? "s" : ""} found across ${identitiesScanned} identit${identitiesScanned > 1 ? "ies" : "y"}.`
-          : warning || `Scan complete — no new exposures found for ${identitiesScanned} identit${identitiesScanned > 1 ? "ies" : "y"}.`
-      );
+      const { identitiesScanned, newFindings } = result.data;
+      setScanStep(4);
+      setScanResult({ newFindings, identitiesScanned });
       await refresh();
       if (newFindings > 0) setTab("Findings");
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Scan failed.");
-    } finally {
+      clearTimeout(stepTimer1); clearTimeout(stepTimer2); clearTimeout(stepTimer3);
       setScanning(false);
+      setScanStep(0);
+      setNotice(error instanceof Error ? error.message : "Scan failed.");
     }
+  }
+
+  function dismissScanResult() {
+    setScanning(false);
+    setScanStep(0);
+    setScanResult(null);
   }
 
   async function createIdentity() {
@@ -493,6 +509,75 @@ export default function Home() {
           </footer>
         </div>
       </section>
+
+      {/* Scan overlay */}
+      <AnimatePresence>
+        {scanning && (
+          <motion.div className="scan-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+            <motion.div className="scan-modal"
+              initial={{ scale: 0.92, opacity: 0, y: 24 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.94, opacity: 0, y: 16 }} transition={{ type: "spring", stiffness: 340, damping: 28 }}>
+
+              {/* Scanning in progress */}
+              {scanStep < 4 && (
+                <>
+                  <div className="scan-radar">
+                    <motion.div className="scan-ring scan-ring-1" animate={{ scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }} />
+                    <motion.div className="scan-ring scan-ring-2" animate={{ scale: [1, 1.6, 1], opacity: [0.5, 0, 0.5] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut", delay: 0.55 }} />
+                    <motion.div className="scan-ring scan-ring-3" animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut", delay: 1.1 }} />
+                    <div className="scan-core"><Globe size={28} aria-hidden="true" /></div>
+                  </div>
+                  <h2 className="scan-title">Scanning the internet…</h2>
+                  <div className="scan-steps">
+                    {[
+                      "Searching public sources",
+                      "Checking results for your identities",
+                      "Verifying matches",
+                      "Finalising findings",
+                    ].map((label, i) => (
+                      <motion.div key={label} className={`scan-step ${scanStep > i ? "done" : scanStep === i ? "active" : "pending"}`}
+                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.12 }}>
+                        <span className="scan-step-dot" />
+                        <span>{label}</span>
+                        {scanStep > i && <CheckCircle2 size={14} className="scan-step-check" aria-hidden="true" />}
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Result */}
+              {scanStep === 4 && scanResult !== null && (
+                <motion.div className="scan-result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                  {scanResult.newFindings > 0 ? (
+                    <>
+                      <div className="scan-result-icon found"><AlertTriangle size={32} aria-hidden="true" /></div>
+                      <h2 className="scan-title">Exposures found</h2>
+                      <p className="scan-subtitle">
+                        <strong>{scanResult.newFindings}</strong> new exposure{scanResult.newFindings > 1 ? "s" : ""} detected across{" "}
+                        <strong>{scanResult.identitiesScanned}</strong> identity{scanResult.identitiesScanned > 1 ? " checks" : " check"}.
+                      </p>
+                      <p className="scan-hint">Review each finding and decide whether to submit a removal request.</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="scan-result-icon clear"><CheckCircle2 size={32} aria-hidden="true" /></div>
+                      <h2 className="scan-title">No sources found</h2>
+                      <p className="scan-subtitle">
+                        Checked <strong>{scanResult.identitiesScanned}</strong> identit{scanResult.identitiesScanned > 1 ? "ies" : "y"} — no new public exposures detected.
+                      </p>
+                      <p className="scan-hint">Run a scan again any time to stay up to date.</p>
+                    </>
+                  )}
+                  <button className="button button-primary scan-close-btn" onClick={dismissScanResult}>
+                    {scanResult.newFindings > 0 ? "View findings →" : "Done"}
+                  </button>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

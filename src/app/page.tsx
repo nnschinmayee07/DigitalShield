@@ -200,9 +200,7 @@ export default function Home() {
     window.location.href = "/login";
   }
 
-  const canScan = authenticated && !scanning && !loading && identities.some((i) =>
-    ["email", "phone", "username", "social_profile"].includes(i.kind as string)
-  );
+  const canScan = authenticated && !scanning;
 
   return (
     <main className="app-shell">
@@ -338,7 +336,7 @@ export default function Home() {
               <div className="panel-head"><div><h2>Quick actions</h2><p>Keep your digital footprint organized</p></div></div>
               <div className="quick-grid">
                 <QuickAction icon={UserPlus} title="Add an identity" detail="Email, username, phone" onClick={() => setTab("Identities")} />
-                <QuickAction icon={ScanSearch} title="Scan the internet" detail="Find where you appear" onClick={() => { if (canScan) void scanInternet(); else setTab("Identities"); }} />
+                <QuickAction icon={ScanSearch} title="Scan the internet" detail="Find where you appear" onClick={() => { if (authenticated) void scanInternet(); else setTab("Identities"); }} />
                 <QuickAction icon={ShieldCheck} title="Track a removal" detail="Record a takedown request" onClick={() => setTab("Removal requests")} />
               </div>
             </section>
